@@ -1564,7 +1564,18 @@ class Test_Bucket(unittest.TestCase):
 
         self.assertEqual(bucket.retention_period, period)
 
-    def test_retention_period_setter(self):
+    def test_retention_period_setter_w_none(self):
+        period = 86400 * 100  # 100 days
+        bucket = self._make_one()
+        policy = bucket._properties['retentionPolicy'] = {}
+        policy['retentionPeriod'] = period
+
+        bucket.retention_period = None
+
+        self.assertIsNone(
+            bucket._properties['retentionPolicy']['retentionPeriod'])
+
+    def test_retention_period_setter_w_int(self):
         period = 86400 * 100  # 100 days
         bucket = self._make_one()
 
@@ -2479,7 +2490,7 @@ class Test_Bucket(unittest.TestCase):
         kw, = connection._requested
         self.assertEqual(kw['method'], 'POST')
         self.assertEqual(kw['path'], '/b/{}/lockRetentionPolicy'.format(name))
-        self.assertEqual(kw['query_params'], {'metageneration': 1234})
+        self.assertEqual(kw['query_params'], {'ifMetagenerationMatch': 1234})
 
     def test_lock_retention_policy_w_user_project(self):
         name = 'name'
@@ -2512,7 +2523,7 @@ class Test_Bucket(unittest.TestCase):
         self.assertEqual(kw['path'], '/b/{}/lockRetentionPolicy'.format(name))
         self.assertEqual(
             kw['query_params'], {
-                'metageneration': 1234,
+                'ifMetagenerationMatch': 1234,
                 'userProject': user_project,
             })
 
